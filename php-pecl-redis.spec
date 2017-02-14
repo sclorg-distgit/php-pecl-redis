@@ -1,3 +1,5 @@
+# centos/sclo spec file for php-pecl-redis, from:
+#
 # remirepo spec file for php-pecl-redis
 # adapted for scl, from
 #
@@ -12,37 +14,36 @@
 %if 0%{?scl:1}
 %global sub_prefix %{scl_prefix}
 %scl_package       php-pecl-redis
+%if "%{scl}" == "rh-php56"
+%global sub_prefix sclo-php56-
+%endif
+%if "%{scl}" == "rh-php70"
+%global sub_prefix sclo-php70-
+%endif
 %else
 %global _root_bindir %{_bindir}
 %endif
 
 %global pecl_name   redis
-%global with_zts    0%{!?_without_zts:%{?__ztsphp:1}}
-%global with_tests  0%{!?_without_tests:1}
+# redis is not available in RHEL
+%global with_tests  0%{?_with_tests:1}
 %global with_igbin  1
-%if "%{php_version}" < "5.6"
-# after igbinary
-%global ini_name    %{pecl_name}.ini
-%else
 # after 40-igbinary
 %global ini_name    50-%{pecl_name}.ini
-%endif
-#global prever      RC2
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis
 Version:       3.1.1
-Release:       1%{?dist}%{!?scl:%{!?nophptag:%(%{__php} -r 'echo ".".PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')}}
+Release:       1%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:       PHP
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
 
-BuildRoot:     %{_tmppath}/%{name}-%{version}-%{release}-root
 BuildRequires: %{?scl_prefix}php-devel
 BuildRequires: %{?scl_prefix}php-pear
 %if %{with_igbin}
-BuildRequires: %{?sub_prefix}php-pecl-igbinary-devel
+BuildRequires: %{?scl_prefix}php-pecl-igbinary-devel
 %endif
 # to run Test suite
 %if %{with_tests}
@@ -52,7 +53,7 @@ BuildRequires: redis >= 3
 Requires:      %{?scl_prefix}php(zend-abi) = %{php_zend_api}
 Requires:      %{?scl_prefix}php(api) = %{php_core_api}
 %if %{with_igbin}
-Requires:      %{?sub_prefix}php-pecl(igbinary)%{?_isa}
+Requires:      %{?scl_prefix}php-pecl(igbinary)%{?_isa}
 %endif
 %{?_sclreq:Requires: %{?scl_prefix}runtime%{?_sclreq}%{?_isa}}
 
@@ -64,30 +65,6 @@ Provides:      %{?scl_prefix}php-pecl(%{pecl_name})%{?_isa} = %{version}
 %if "%{?scl_prefix}" != "%{?sub_prefix}"
 Provides:      %{?scl_prefix}php-pecl-%{pecl_name}          = %{version}-%{release}
 Provides:      %{?scl_prefix}php-pecl-%{pecl_name}%{?_isa}  = %{version}-%{release}
-%endif
-
-%if "%{?vendor}" == "Remi Collet" && 0%{!?scl:1} && 0%{?rhel}
-# Other third party repo stuff
-Obsoletes:     php53-pecl-%{pecl_name}  <= %{version}
-Obsoletes:     php53u-pecl-%{pecl_name} <= %{version}
-Obsoletes:     php54-pecl-%{pecl_name}  <= %{version}
-Obsoletes:     php54w-pecl-%{pecl_name} <= %{version}
-%if "%{php_version}" > "5.5"
-Obsoletes:     php55u-pecl-%{pecl_name} <= %{version}
-Obsoletes:     php55w-pecl-%{pecl_name} <= %{version}
-%endif
-%if "%{php_version}" > "5.6"
-Obsoletes:     php56u-pecl-%{pecl_name} <= %{version}
-Obsoletes:     php56w-pecl-%{pecl_name} <= %{version}
-%endif
-%if "%{php_version}" > "7.0"
-Obsoletes:     php70u-pecl-%{pecl_name} <= %{version}
-Obsoletes:     php70w-pecl-%{pecl_name} <= %{version}
-%endif
-%if "%{php_version}" > "7.1"
-Obsoletes:     php71u-pecl-%{pecl_name} <= %{version}
-Obsoletes:     php71w-pecl-%{pecl_name} <= %{version}
-%endif
 %endif
 
 %if 0%{?fedora} < 20 && 0%{?rhel} < 7
@@ -128,11 +105,6 @@ if test "x${extver}" != "x%{version}%{?gh_date:-dev}%{?prever}"; then
 fi
 cd ..
 
-%if %{with_zts}
-# duplicate for ZTS build
-cp -pr NTS ZTS
-%endif
-
 # Drop in the bit of configuration
 cat > %{ini_name} << 'EOF'
 ; Enable %{pecl_name} extension module
@@ -162,8 +134,6 @@ EOF
 
 
 %build
-%{?dtsenable}
-
 cd NTS
 %{_bindir}/phpize
 %configure \
@@ -175,33 +145,11 @@ cd NTS
     --with-php-config=%{_bindir}/php-config
 make %{?_smp_mflags}
 
-%if %{with_zts}
-cd ../ZTS
-%{_bindir}/zts-phpize
-%configure \
-    --enable-redis \
-    --enable-redis-session \
-%if %{with_igbin}
-    --enable-redis-igbinary \
-%endif
-    --with-php-config=%{_bindir}/zts-php-config
-make %{?_smp_mflags}
-%endif
-
 
 %install
-rm -rf %{buildroot}
-%{?dtsenable}
-
 # Install the NTS stuff
 make -C NTS install INSTALL_ROOT=%{buildroot}
 install -D -m 644 %{ini_name} %{buildroot}%{php_inidir}/%{ini_name}
-
-%if %{with_zts}
-# Install the ZTS stuff
-make -C ZTS install INSTALL_ROOT=%{buildroot}
-install -D -m 644 %{ini_name} %{buildroot}%{php_ztsinidir}/%{ini_name}
-%endif
 
 # Install the package XML file
 install -D -m 644 package.xml %{buildroot}%{pecl_xmldir}/%{name}.xml
@@ -221,15 +169,6 @@ done
 %endif
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
-
-%if %{with_zts}
-%{__ztsphp} --no-php-ini \
-%if %{with_igbin}
-    --define extension=igbinary.so \
-%endif
-    --define extension=%{buildroot}%{php_ztsextdir}/%{pecl_name}.so \
-    --modules | grep %{pecl_name}
-%endif
 
 %if %{with_tests}
 cd NTS/tests
@@ -268,7 +207,6 @@ exit $ret
 %endif
 
 
-%if 0%{?fedora} < 24
 # when pear installed alone, after us
 %triggerin -- %{?scl_prefix}php-pear
 if [ -x %{__pecl} ] ; then
@@ -285,15 +223,9 @@ fi
 if [ $1 -eq 0 -a -x %{__pecl} ] ; then
     %{pecl_uninstall} %{pecl_name} >/dev/null || :
 fi
-%endif
-
-
-%clean
-rm -rf %{buildroot}
 
 
 %files
-%defattr(-,root,root,-)
 %{?_licensedir:%license NTS/COPYING}
 %doc %{pecl_docdir}/%{pecl_name}
 %{pecl_xmldir}/%{name}.xml
@@ -301,13 +233,11 @@ rm -rf %{buildroot}
 %{php_extdir}/%{pecl_name}.so
 %config(noreplace) %{php_inidir}/%{ini_name}
 
-%if %{with_zts}
-%{php_ztsextdir}/%{pecl_name}.so
-%config(noreplace) %{php_ztsinidir}/%{ini_name}
-%endif
-
 
 %changelog
+* Tue Feb 14 2017 Remi Collet <remi@fedoraproject.org> - 3.1.1-1
+- cleanup for SCLo build
+
 * Wed Feb  1 2017 Remi Collet <remi@fedoraproject.org> - 3.1.1-1
 - Update to 3.1.1 (stable)
 
