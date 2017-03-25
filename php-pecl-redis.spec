@@ -33,7 +33,7 @@
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis
-Version:       3.1.1
+Version:       3.1.2
 Release:       1%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:       PHP
@@ -235,6 +235,9 @@ fi
 
 
 %changelog
+* Sat Mar 25 2017 Remi Collet <remi@remirepo.net> - 3.1.2-1
+- Update to 3.1.2 (stable)
+
 * Tue Feb 14 2017 Remi Collet <remi@fedoraproject.org> - 3.1.1-1
 - cleanup for SCLo build
 
