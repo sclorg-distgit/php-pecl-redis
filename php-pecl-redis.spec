@@ -20,6 +20,9 @@
 %if "%{scl}" == "rh-php70"
 %global sub_prefix sclo-php70-
 %endif
+%if "%{scl}" == "rh-php71"
+%global sub_prefix sclo-php71-
+%endif
 %else
 %global _root_bindir %{_bindir}
 %endif
@@ -34,7 +37,7 @@
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis
 Version:       3.1.2
-Release:       1%{?dist}
+Release:       2%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:       PHP
 Group:         Development/Languages
@@ -235,6 +238,9 @@ fi
 
 
 %changelog
+* Thu Aug 10 2017 Remi Collet <remi@remirepo.net> - 3.1.2-2
+- change for sclo-php71
+
 * Sat Mar 25 2017 Remi Collet <remi@remirepo.net> - 3.1.2-1
 - Update to 3.1.2 (stable)
 
