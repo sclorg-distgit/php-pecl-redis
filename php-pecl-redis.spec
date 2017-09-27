@@ -28,16 +28,14 @@
 %endif
 
 %global pecl_name   redis
-# redis is not available in RHEL
-%global with_tests  0%{?_with_tests:1}
 %global with_igbin  1
 # after 40-igbinary
 %global ini_name    50-%{pecl_name}.ini
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis
-Version:       3.1.2
-Release:       2%{?dist}
+Version:       3.1.4
+Release:       1%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:       PHP
 Group:         Development/Languages
@@ -47,10 +45,6 @@ BuildRequires: %{?scl_prefix}php-devel
 BuildRequires: %{?scl_prefix}php-pear
 %if %{with_igbin}
 BuildRequires: %{?scl_prefix}php-pecl-igbinary-devel
-%endif
-# to run Test suite
-%if %{with_tests}
-BuildRequires: redis >= 3
 %endif
 
 Requires:      %{?scl_prefix}php(zend-abi) = %{php_zend_api}
@@ -173,42 +167,6 @@ done
     --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
     --modules | grep %{pecl_name}
 
-%if %{with_tests}
-cd NTS/tests
-
-# Launch redis server
-mkdir -p data
-pidfile=$PWD/redis.pid
-port=$(%{__php} -r 'echo 9000 + PHP_MAJOR_VERSION*100 + PHP_MINOR_VERSION*10 + PHP_INT_SIZE;')
-%{_root_bindir}/redis-server   \
-    --bind      127.0.0.1      \
-    --port      $port          \
-    --daemonize yes            \
-    --logfile   $PWD/redis.log \
-    --dir       $PWD/data      \
-    --pidfile   $pidfile
-
-sed -e "s/6379/$port/" -i RedisTest.php
-
-# Run the test Suite
-ret=0
-%{__php} --no-php-ini \
-%if %{with_igbin}
-    --define extension=igbinary.so \
-%endif
-    --define extension=%{buildroot}%{php_extdir}/%{pecl_name}.so \
-    TestRedis.php || ret=1
-
-# Cleanup
-if [ -f $pidfile ]; then
-   %{_root_bindir}/redis-cli -p $port shutdown
-fi
-
-exit $ret
-%else
-: Upstream test suite disabled
-%endif
-
 
 # when pear installed alone, after us
 %triggerin -- %{?scl_prefix}php-pear
@@ -238,6 +196,9 @@ fi
 
 
 %changelog
+* Wed Sep 27 2017 Remi Collet <remi@remirepo.net> - 3.1.4-1
+- Update to 3.1.4 (stable)
+
 * Thu Aug 10 2017 Remi Collet <remi@remirepo.net> - 3.1.2-2
 - change for sclo-php71
 
