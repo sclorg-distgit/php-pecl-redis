@@ -35,11 +35,14 @@
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis
 Version:       3.1.4
-Release:       1%{?dist}
+Release:       2%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:       PHP
 Group:         Development/Languages
 URL:           http://pecl.php.net/package/redis
+
+# Upstream
+Patch0:        https://github.com/phpredis/phpredis/commit/9d15f07adb0de7ae02111f942bf7d0957bbc25d0.patch
 
 BuildRequires: %{?scl_prefix}php-devel
 BuildRequires: %{?scl_prefix}php-pear
@@ -93,6 +96,7 @@ sed -e 's/role="test"/role="src"/' \
     -i package.xml
 
 cd NTS
+%patch0 -p1 -b .upstream
 
 # Sanity check, really often broken
 extver=$(sed -n '/#define PHP_REDIS_VERSION/{s/.* "//;s/".*$//;p}' php_redis.h)
@@ -196,6 +200,9 @@ fi
 
 
 %changelog
+* Sun Nov  5 2017 Remi Collet <remi@remirepo.net> - 3.1.4-2
+- add upstream patch, fix segfault with PHP 5.x
+
 * Wed Sep 27 2017 Remi Collet <remi@remirepo.net> - 3.1.4-1
 - Update to 3.1.4 (stable)
 
