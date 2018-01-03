@@ -5,7 +5,7 @@
 #
 # Fedora spec file for php-pecl-redis
 #
-# Copyright (c) 2012-2017 Remi Collet
+# Copyright (c) 2012-2018 Remi Collet
 # License: CC-BY-SA
 # http://creativecommons.org/licenses/by-sa/4.0/
 #
@@ -34,7 +34,7 @@
 
 Summary:       Extension for communicating with the Redis key-value store
 Name:          %{?sub_prefix}php-pecl-redis
-Version:       3.1.5
+Version:       3.1.6
 Release:       1%{?dist}
 Source0:       http://pecl.php.net/get/%{pecl_name}-%{version}%{?prever}.tgz
 License:       PHP
@@ -195,8 +195,11 @@ fi
 
 
 %changelog
-* Thu Dec 21 2017 Remi Collet <remi@remirepo.net> - 3.1.4-1
-- Update to 3.1.4 (stable)
+* Wed Jan  3 2018 Remi Collet <remi@remirepo.net> - 3.1.6-1
+- Update to 3.1.6 (stable)
+
+* Thu Dec 21 2017 Remi Collet <remi@remirepo.net> - 3.1.5-1
+- Update to 3.1.5 (stable)
 
 * Sun Nov  5 2017 Remi Collet <remi@remirepo.net> - 3.1.4-2
 - add upstream patch, fix segfault with PHP 5.x
